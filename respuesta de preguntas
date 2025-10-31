@@ -1,0 +1,29 @@
+1 Todas las cuentas de un cliente específico
+Para un cliente determinado el sistema listará todas sus cuentas: el número de cuenta, el tipo (por ejemplo, ahorro o corriente), la moneda, el saldo actual y si la cuenta está activa o cerrada. Con eso puedes ver de un vistazo en qué productos participa ese cliente y cuánto dinero mantiene en cada uno.
+
+2 Clientes con patrimonio estimado mayor a 1,000,000
+Se devolverá la lista de clientes cuyo patrimonio declarado supera el millón. Esos clientes suelen considerarse de alto patrimonio y son candidatos para servicios preferentes, asesoría patrimonial o productos de inversión personalizados.
+
+3 Créditos hipotecarios con saldo pendiente > 50,000
+Aquí se identificarán los créditos del tipo hipotecario que todavía tienen un saldo de capital mayor a 50,000. Para cada uno verás el cliente titular, el saldo pendiente y el estado del crédito (por ejemplo, vigente o en mora), lo que permite focalizar la supervisión sobre los préstamos de mayor exposición.
+
+4 Transacciones que son depósitos o transferencias
+Se listan todas las operaciones calificadas como depósitos o transferencias. Para cada registro verás la fecha, el monto, el concepto y el estado de la operación; es útil para rastrear entradas de efectivo y movimientos entre cuentas.
+
+5 Solicitudes de crédito evaluadas en el primer trimestre de 2024
+Se incluyen todas las solicitudes registradas y evaluadas entre enero y marzo de 2024. El resultado muestra quién pidió el crédito, qué producto solicitó, el monto y la decisión final (aprobado o rechazado), lo que permite medir el volumen de gestión crediticia en ese periodo.
+
+6 Cuentas de tipo Ahorro, Corriente o Inversión
+Esta consulta devuelve las cuentas que pertenecen a esas categorías, con información sobre la moneda, el saldo y el estado. Así sabes cuántas y cuáles cuentas operan en cada segmento de producto (personales, operativas o de inversión).
+
+7 Clientes cuyos nombres contienen "maría" o "josé"
+Se listan todos los clientes cuyos nombres contienen esas palabras —por ejemplo “María Gómez”, “Ana María” o “José Ruiz”— sin importar mayúsculas o minúsculas. Es práctico para búsquedas rápidas o segmentaciones por nombre.
+
+8 Garantías sin fecha de vencimiento
+Aparecen las garantías que no tienen una fecha de vencimiento registrada. Suelen ser garantías abiertas o que permanecen vigentes hasta la cancelación del crédito; conviene revisarlas para asegurar que la documentación esté completa.
+
+9 Transacciones ordenadas por tipo y monto
+Este informe muestra todas las transacciones clasificadas por tipo (depósito, transferencia, retiro, pago, etc.) y, dentro de cada tipo, ordenadas de mayor a menor por monto. Permite detectar las operaciones más significativas en cada categoría.
+
+10 Volumen de transacciones por sucursal y tipo en el primer trimestre de 2024
+Para cada sucursal se suma el monto total movido y se cuenta la cantidad de transacciones por tipo (por ejemplo: depósitos, transferencias) durante enero-marzo de 2024. El resultado muestra qué sucursales fueron más activas y qué tipos de operaciones concentraron mayor volumen en ese trimestre.
