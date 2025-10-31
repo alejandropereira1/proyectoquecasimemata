@@ -1,0 +1,692 @@
+CREATE DATABASE ejercicio2;
+USE ejercicio2;
+
+CREATE TABLE cliente (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    tipo VARCHAR(40) NOT NULL, -- Persona natural o jurídica
+    nombre_completo VARCHAR(100) NOT NULL,
+    dni_cliente VARCHAR(20) NOT NULL UNIQUE,
+    fecha_de_nacimiento DATE NOT NULL,
+    nacionalidad VARCHAR(40) NOT NULL,
+    direccion VARCHAR(150) NOT NULL,
+    telefono VARCHAR(20),
+    correo VARCHAR(100) UNIQUE NOT NULL,
+    profesion VARCHAR(60),
+    ingresos_mensuales_declarados DECIMAL(12,2),
+    patrimonio_estimado DECIMAL(12,2),
+    nivel_de_riesgo_asignado VARCHAR(40),
+    clasificacion_interna VARCHAR(40)
+);
+
+CREATE TABLE sucursales_bancarias (
+    id_sucursal INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(60) NOT NULL,
+    direccion VARCHAR(150) NOT NULL,
+    coordenadas_geograficas VARCHAR(100),
+    telefono VARCHAR(20),
+    horario_de_atencion VARCHAR(60),
+    gerente_responsable VARCHAR(100),
+    numero_de_cajeros INT,
+    numero_de_asesores_comerciales INT,
+    cajas_de_seguridad_disponibles INT,
+    servicios_ofrecidos VARCHAR(200)
+);
+
+
+CREATE TABLE empleados (
+    id_empleado INT AUTO_INCREMENT PRIMARY KEY,
+    nombres VARCHAR(60) NOT NULL,
+    apellidos VARCHAR(60) NOT NULL,
+    documento_de_identidad VARCHAR(20) NOT NULL,
+    cargo VARCHAR(60) NOT NULL,
+    departamento VARCHAR(60),
+    id_sucursal INT,
+    fecha_de_ingreso DATE,
+    nivel_jerarquico VARCHAR(40),
+    supervisor_directo VARCHAR(60),
+    estado_laboral VARCHAR(40),
+    FOREIGN KEY (id_sucursal) REFERENCES sucursales_bancarias(id_sucursal)
+);
+
+
+CREATE TABLE usuarios_sistema (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    id_empleado INT NOT NULL,
+    nombre_usuario VARCHAR(40) UNIQUE NOT NULL,
+    contraseña_hash VARCHAR(255) NOT NULL,
+    rol VARCHAR(40) NOT NULL,
+    estado VARCHAR(20) DEFAULT 'activo',
+    FOREIGN KEY (id_empleado) REFERENCES empleados(id_empleado)
+);
+
+
+CREATE TABLE cuentas_bancarias (
+    id_cuenta INT AUTO_INCREMENT PRIMARY KEY,
+    tipo VARCHAR(40) NOT NULL,
+    moneda VARCHAR(10) NOT NULL,
+    id_sucursal INT NOT NULL,
+    fecha_de_apertura DATE NOT NULL,
+    saldo_actual DECIMAL(14,2) DEFAULT 0.00,
+    saldo_promedio_trimestral DECIMAL(14,2),
+    tasa_de_interes_aplicable DECIMAL(5,2),
+    fecha_de_ultima_transaccion DATE,
+    estado VARCHAR(40) DEFAULT 'activa',
+    FOREIGN KEY (id_sucursal) REFERENCES sucursales_bancarias(id_sucursal)
+);
+
+
+CREATE TABLE cliente_cuenta (
+    id_cliente INT NOT NULL,
+    id_cuenta INT NOT NULL,
+    tipo_titular VARCHAR(20) NOT NULL, -- principal o adicional
+    fecha_asociacion DATE NOT NULL,
+    PRIMARY KEY (id_cliente, id_cuenta),
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
+    FOREIGN KEY (id_cuenta) REFERENCES cuentas_bancarias(id_cuenta)
+);
+
+
+CREATE TABLE productos_de_credito (
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_comercial VARCHAR(60) NOT NULL,
+    tipo VARCHAR(40) NOT NULL,
+    monto_minimo DECIMAL(12,2),
+    monto_maximo DECIMAL(12,2),
+    plazo_minimo INT,
+    plazo_maximo INT,
+    tasa_de_interes_base DECIMAL(5,2),
+    comisiones_aplicables DECIMAL(10,2),
+    requisitos_documentales VARCHAR(200),
+    garantias_requeridas VARCHAR(200),
+    segmentos_de_clientes_elegibles VARCHAR(200)
+);
+
+CREATE TABLE solicitudes_de_credito (
+    id_solicitud INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATE NOT NULL,
+    id_cliente INT NOT NULL,
+    id_producto INT NOT NULL,
+    monto DECIMAL(12,2) NOT NULL,
+    plazo INT NOT NULL,
+    destino_de_fondos VARCHAR(100),
+    ingresos_declarados DECIMAL(12,2),
+    respaldos_presentados VARCHAR(200),
+    analisis_de_capacidad_de_pago VARCHAR(200),
+    nivel_de_endeudamiento DECIMAL(5,2),
+    puntuacion_crediticia DECIMAL(5,2),
+    recomendacion_del_analista VARCHAR(100),
+    decision_final VARCHAR(40),
+    motivo VARCHAR(200),
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente),
+    FOREIGN KEY (id_producto) REFERENCES productos_de_credito(id_producto)
+);
+
+
+CREATE TABLE creditos_otorgados (
+    id_credito INT AUTO_INCREMENT PRIMARY KEY,
+    id_solicitud INT NOT NULL,
+    fecha_de_desembolso DATE NOT NULL,
+    monto_aprobado DECIMAL(12,2) NOT NULL,
+    plazo_en_meses INT NOT NULL,
+    tasa_de_interes_efectiva DECIMAL(5,2),
+    sistema_de_amortizacion VARCHAR(40),
+    dia_de_pago INT,
+    saldo_capital_actual DECIMAL(12,2),
+    proximo_vencimiento DATE,
+    estado VARCHAR(40),
+    FOREIGN KEY (id_solicitud) REFERENCES solicitudes_de_credito(id_solicitud)
+);
+
+
+CREATE TABLE pagos_creditos (
+    id_pago INT AUTO_INCREMENT PRIMARY KEY,
+    id_credito INT NOT NULL,
+    fecha_pago DATE NOT NULL,
+    monto_capital DECIMAL(12,2) NOT NULL,
+    monto_interes DECIMAL(12,2) NOT NULL,
+    monto_total DECIMAL(12,2) NOT NULL,
+    estado_pago VARCHAR(40) DEFAULT 'pagado',
+    FOREIGN KEY (id_credito) REFERENCES creditos_otorgados(id_credito)
+);
+
+
+CREATE TABLE garantias (
+    id_garantia INT AUTO_INCREMENT PRIMARY KEY,
+    tipo VARCHAR(40) NOT NULL,
+    descripcion_detallada VARCHAR(400),
+    valor_comercial DECIMAL(12,2),
+    valor_de_respaldo_aceptado DECIMAL(12,2),
+    fecha_de_constitucion DATE,
+    fecha_de_vencimiento DATE,
+    id_credito INT NOT NULL,
+    estado_legal VARCHAR(100),
+    FOREIGN KEY (id_credito) REFERENCES creditos_otorgados(id_credito)
+);
+
+
+CREATE TABLE tarjetas_de_credito (
+    id_tarjeta INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    tipo VARCHAR(40) NOT NULL,
+    red VARCHAR(40),
+    linea_de_credito_asignada DECIMAL(12,2),
+    fecha_de_emision DATE,
+    fecha_de_vencimiento DATE,
+    limite_para_avances DECIMAL(12,2),
+    tasa_de_interes_rotatoria DECIMAL(5,2),
+    tasa_para_avances DECIMAL(5,2),
+    ciclo_de_facturacion VARCHAR(40),
+    estado VARCHAR(40) DEFAULT 'activa',
+    FOREIGN KEY (id_cliente) REFERENCES cliente(id_cliente)
+);
+
+CREATE TABLE transacciones_financieras (
+    id_transaccion INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATE NOT NULL,
+    hora TIME NOT NULL,
+    tipo VARCHAR(40) NOT NULL,
+    id_cuenta_origen INT,
+    id_cuenta_destino INT,
+    monto DECIMAL(12,2) NOT NULL,
+    concepto VARCHAR(100),
+    canal_utilizado VARCHAR(40),
+    id_usuario_autorizo INT,
+    numero_de_comprobante VARCHAR(20) UNIQUE,
+    estado VARCHAR(40),
+    FOREIGN KEY (id_cuenta_origen) REFERENCES cuentas_bancarias(id_cuenta),
+    FOREIGN KEY (id_cuenta_destino) REFERENCES cuentas_bancarias(id_cuenta),
+    FOREIGN KEY (id_usuario_autorizo) REFERENCES usuarios_sistema(id_usuario)
+);
+
+
+CREATE TABLE tipo_cambio (
+    id_tipo_cambio INT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATE NOT NULL,
+    moneda_origen VARCHAR(10) NOT NULL,
+    moneda_destino VARCHAR(10) NOT NULL,
+    tasa DECIMAL(10,4) NOT NULL
+);
+
+
+CREATE TABLE auditoria_transacciones (
+    id_auditoria INT AUTO_INCREMENT PRIMARY KEY,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_usuario INT,
+    accion VARCHAR(200),
+    tabla_afectada VARCHAR(60),
+    id_registro_afectado INT,
+    detalle VARCHAR(255),
+    FOREIGN KEY (id_usuario) REFERENCES usuarios_sistema(id_usuario)
+);
+USE ejercicio2;
+
+
+INSERT INTO sucursales_bancarias (nombre, direccion, coordenadas_geograficas, telefono, horario_de_atencion, gerente_responsable, numero_de_cajeros, numero_de_asesores_comerciales, cajas_de_seguridad_disponibles, servicios_ofrecidos)
+VALUES
+('Sucursal Central', 'Av. Principal 123, Ciudad Capital', '14.5994,-90.5480', '5551000', 'Lun-Vie 8:00-17:00', 'Carlos Martínez', 5, 10, 20, 'Cuentas, Créditos, Inversiones'),
+('Sucursal Norte', 'Calle 45, Zona Norte', '14.6300,-90.5200', '5552000', 'Lun-Vie 9:00-17:00', 'Laura Gómez', 3, 6, 10, 'Cuentas, Créditos'),
+('Sucursal Sur', 'Boulevard Sur 88', '14.5500,-90.5700', '5553000', 'Lun-Vie 8:30-16:30', 'Miguel Herrera', 4, 8, 15, 'Cuentas, Créditos, Seguros');
+
+
+INSERT INTO empleados (nombres, apellidos, documento_de_identidad, cargo, departamento, id_sucursal, fecha_de_ingreso, nivel_jerarquico, supervisor_directo, estado_laboral)
+VALUES
+('Ana', 'Pérez', '12345678', 'Gerente de Sucursal', 'Administración', 1, '2018-03-15', 'Alto', 'Dirección General', 'Activo'),
+('Luis', 'Ramírez', '87654321', 'Asesor Comercial', 'Ventas', 1, '2020-07-10', 'Medio', 'Ana Pérez', 'Activo'),
+('Marta', 'García', '99887766', 'Cajero', 'Operaciones', 2, '2021-02-05', 'Bajo', 'Laura Gómez', 'Activo');
+
+
+INSERT INTO usuarios_sistema (id_empleado, nombre_usuario, contraseña_hash, rol, estado)
+VALUES
+(1, 'aperez', 'hash123', 'admin', 'activo'),
+(2, 'lramirez', 'hash456', 'asesor', 'activo'),
+(3, 'mgarcia', 'hash789', 'cajero', 'activo');
+
+
+INSERT INTO cliente (tipo, nombre_completo, dni_cliente, fecha_de_nacimiento, nacionalidad, direccion, telefono, correo, profesion, ingresos_mensuales_declarados, patrimonio_estimado, nivel_de_riesgo_asignado, clasificacion_interna)
+VALUES
+('Persona Natural', 'Juan López', '10101010', '1988-04-12', 'Guatemalteco', 'Zona 10, Ciudad Capital', '5551111', 'juan.lopez@mail.com', 'Ingeniero', 8000.00, 50000.00, 'Medio', 'A'),
+('Persona Natural', 'María Fernández', '20202020', '1990-06-22', 'Guatemalteca', 'Zona 15, Ciudad Capital', '5552222', 'maria.fernandez@mail.com', 'Doctora', 12000.00, 100000.00, 'Bajo', 'A+'),
+('Persona Jurídica', 'Tech Solutions S.A.', '30303030', '2005-01-01', 'Guatemalteca', 'Parque Empresarial, Zona 12', '5553333', 'contacto@techsolutions.com', 'Empresa', 50000.00, 250000.00, 'Bajo', 'B');
+
+
+INSERT INTO cuentas_bancarias (tipo, moneda, id_sucursal, fecha_de_apertura, saldo_actual, saldo_promedio_trimestral, tasa_de_interes_aplicable, fecha_de_ultima_transaccion, estado)
+VALUES
+('Cuenta de Ahorro', 'GTQ', 1, '2020-01-15', 15000.00, 14500.00, 1.5, '2025-10-01', 'activa'),
+('Cuenta Corriente', 'GTQ', 1, '2019-03-12', 25000.00, 23000.00, 0.8, '2025-09-30', 'activa'),
+('Cuenta Empresarial', 'USD', 2, '2021-06-05', 80000.00, 75000.00, 0.5, '2025-10-02', 'activa');
+
+
+INSERT INTO cliente_cuenta (id_cliente, id_cuenta, tipo_titular, fecha_asociacion)
+VALUES
+(1, 1, 'Principal', '2020-01-15'),
+(2, 2, 'Principal', '2019-03-12'),
+(3, 3, 'Principal', '2021-06-05');
+
+
+INSERT INTO productos_de_credito (nombre_comercial, tipo, monto_minimo, monto_maximo, plazo_minimo, plazo_maximo, tasa_de_interes_base, comisiones_aplicables, requisitos_documentales, garantias_requeridas, segmentos_de_clientes_elegibles)
+VALUES
+('Crédito Personal Plus', 'Personal', 1000.00, 50000.00, 6, 60, 10.5, 1.0, 'DPI, comprobante de ingresos', 'Sin garantía', 'Personas naturales'),
+('Crédito Hipotecario Vivienda', 'Hipotecario', 20000.00, 500000.00, 60, 240, 7.0, 2.0, 'Escritura, DPI, estados financieros', 'Hipoteca inmueble', 'Personas naturales'),
+('Crédito Empresarial PyME', 'Comercial', 10000.00, 1000000.00, 12, 120, 9.0, 1.5, 'Estados financieros, RTU', 'Garantía mobiliaria', 'Empresas');
+
+
+INSERT INTO solicitudes_de_credito (fecha, id_cliente, id_producto, monto, plazo, destino_de_fondos, ingresos_declarados, respaldos_presentados, analisis_de_capacidad_de_pago, nivel_de_endeudamiento, puntuacion_crediticia, recomendacion_del_analista, decision_final, motivo)
+VALUES
+('2024-11-10', 1, 1, 20000.00, 24, 'Compra vehículo', 8000.00, 'DPI, boleta salarial', 'Adecuada', 30.00, 85.00, 'Aprobado', 'Aprobado', 'Cumple perfil'),
+('2024-12-05', 2, 2, 150000.00, 180, 'Compra vivienda', 12000.00, 'DPI, escritura', 'Sólida', 25.00, 92.00, 'Aprobado', 'Aprobado', 'Ingresos suficientes'),
+('2025-01-15', 3, 3, 50000.00, 36, 'Capital de trabajo', 50000.00, 'Estados financieros', 'Alta capacidad', 20.00, 90.00, 'Aprobado', 'Aprobado', 'Empresa solvente');
+
+
+INSERT INTO creditos_otorgados (id_solicitud, fecha_de_desembolso, monto_aprobado, plazo_en_meses, tasa_de_interes_efectiva, sistema_de_amortizacion, dia_de_pago, saldo_capital_actual, proximo_vencimiento, estado)
+VALUES
+(1, '2024-11-20', 20000.00, 24, 10.5, 'Francés', 15, 15000.00, '2025-11-15', 'vigente'),
+(2, '2024-12-20', 150000.00, 180, 7.0, 'Alemán', 10, 140000.00, '2025-11-10', 'vigente'),
+(3, '2025-01-30', 50000.00, 36, 9.0, 'Francés', 20, 42000.00, '2025-11-20', 'vigente');
+
+
+INSERT INTO pagos_creditos (id_credito, fecha_pago, monto_capital, monto_interes, monto_total, estado_pago)
+VALUES
+(1, '2025-01-15', 800.00, 175.00, 975.00, 'pagado'),
+(1, '2025-02-15', 800.00, 170.00, 970.00, 'pagado'),
+(2, '2025-03-10', 1500.00, 875.00, 2375.00, 'pagado'),
+(3, '2025-04-20', 1200.00, 400.00, 1600.00, 'pagado');
+
+
+INSERT INTO garantias (tipo, descripcion_detallada, valor_comercial, valor_de_respaldo_aceptado, fecha_de_constitucion, fecha_de_vencimiento, id_credito, estado_legal)
+VALUES
+('Vehículo', 'Toyota Corolla 2019, placa P123ABC', 90000.00, 50000.00, '2024-11-20', '2026-11-20', 1, 'Registrada'),
+('Hipoteca', 'Casa en Zona 16, escritura 12345', 500000.00, 300000.00, '2024-12-20', '2044-12-20', 2, 'Registrada'),
+('Mobiliaria', 'Inventario de equipos de oficina', 120000.00, 60000.00, '2025-01-30', '2028-01-30', 3, 'Registrada');
+
+
+INSERT INTO tarjetas_de_credito (id_cliente, tipo, red, linea_de_credito_asignada, fecha_de_emision, fecha_de_vencimiento, limite_para_avances, tasa_de_interes_rotatoria, tasa_para_avances, ciclo_de_facturacion, estado)
+VALUES
+(1, 'Clásica', 'Visa', 10000.00, '2023-05-01', '2028-05-01', 3000.00, 35.00, 40.00, 'Mensual', 'activa'),
+(2, 'Oro', 'MasterCard', 20000.00, '2022-10-01', '2027-10-01', 6000.00, 30.00, 38.00, 'Mensual', 'activa');
+
+
+INSERT INTO transacciones_financieras (fecha, hora, tipo, id_cuenta_origen, id_cuenta_destino, monto, concepto, canal_utilizado, id_usuario_autorizo, numero_de_comprobante, estado)
+VALUES
+('2025-10-01', '10:15:00', 'Transferencia', 1, 2, 500.00, 'Pago a María', 'Banca en Línea', 2, 'T0001', 'completada'),
+('2025-10-02', '14:20:00', 'Depósito', NULL, 1, 1500.00, 'Depósito en efectivo', 'Cajero', 3, 'T0002', 'completada'),
+('2025-10-05', '09:30:00', 'Transferencia', 3, 1, 2000.00, 'Pago servicios', 'Banca Web', 1, 'T0003', 'completada');
+
+INSERT INTO tipo_cambio (fecha, moneda_origen, moneda_destino, tasa)
+VALUES
+('2025-10-01', 'USD', 'GTQ', 7.80),
+('2025-10-02', 'USD', 'GTQ', 7.79),
+('2025-10-03', 'USD', 'GTQ', 7.81);
+
+
+INSERT INTO auditoria_transacciones (id_usuario, accion, tabla_afectada, id_registro_afectado, detalle)
+VALUES
+(1, 'Creación de cliente', 'cliente', 1, 'Cliente Juan López agregado'),
+(2, 'Aprobación de crédito', 'creditos_otorgados', 1, 'Crédito personal aprobado'),
+(3, 'Depósito en cuenta', 'transacciones_financieras', 2, 'Depósito efectuado por cliente');
+
+
+DELIMITER //
+CREATE FUNCTION FN_CalcularCapacidadEndeudamiento(ingresos DECIMAL(12,2), deudas DECIMAL(12,2))
+RETURNS DECIMAL(5,2)
+DETERMINISTIC
+BEGIN
+    DECLARE capacidad DECIMAL(5,2);
+    SET capacidad = ((ingresos - deudas) / ingresos) * 100;
+    RETURN IF(capacidad < 0, 0, capacidad);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION FN_VerificarDisponibilidadFondos(idCuenta INT, monto DECIMAL(12,2))
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    DECLARE saldo DECIMAL(12,2);
+    SELECT saldo_actual INTO saldo FROM cuentas_bancarias WHERE id_cuenta = idCuenta;
+    RETURN (saldo >= monto);
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE FUNCTION FN_ObtenerHistorialCrediticio(idCliente INT)
+RETURNS TEXT
+DETERMINISTIC
+BEGIN
+    DECLARE historial TEXT DEFAULT '';
+    SELECT GROUP_CONCAT(CONCAT('Crédito ID: ', id_credito, ' - Estado: ', estado) SEPARATOR '; ')
+    INTO historial
+    FROM creditos_otorgados co
+    JOIN solicitudes_de_credito sc ON sc.id_solicitud = co.id_solicitud
+    WHERE sc.id_cliente = idCliente;
+    RETURN historial;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE FUNCTION FN_CalcularCuotasPrestamo(monto DECIMAL(12,2), tasa DECIMAL(5,2), plazo INT)
+RETURNS DECIMAL(12,2)
+DETERMINISTIC
+BEGIN
+    DECLARE tasaMensual DECIMAL(10,6);
+    DECLARE cuota DECIMAL(12,2);
+    SET tasaMensual = tasa / 100 / 12;
+    SET cuota = (monto * tasaMensual) / (1 - POWER(1 + tasaMensual, -plazo));
+    RETURN cuota;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE FUNCTION FN_DeterminarNivelRiesgoCliente(capacidad DECIMAL(5,2), historial VARCHAR(255))
+RETURNS VARCHAR(40)
+DETERMINISTIC
+BEGIN
+    IF capacidad < 30 THEN
+        RETURN 'Alto';
+    ELSEIF capacidad < 60 THEN
+        RETURN 'Medio';
+    ELSE
+        RETURN 'Bajo';
+    END IF;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE CrearCuentaBancaria(
+    IN p_id_cliente INT,
+    IN p_tipo VARCHAR(40),
+    IN p_moneda VARCHAR(10),
+    IN p_id_sucursal INT,
+    IN p_monto_inicial DECIMAL(12,2)
+)
+BEGIN
+    DECLARE cuentaID INT;
+    IF p_monto_inicial < 100 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Monto inicial insuficiente para abrir cuenta.';
+    END IF;
+
+    INSERT INTO cuentas_bancarias (tipo, moneda, id_sucursal, fecha_de_apertura, saldo_actual, estado)
+    VALUES (p_tipo, p_moneda, p_id_sucursal, CURDATE(), p_monto_inicial, 'activa');
+
+    SET cuentaID = LAST_INSERT_ID();
+
+    INSERT INTO cliente_cuenta (id_cliente, id_cuenta, tipo_titular, fecha_asociacion)
+    VALUES (p_id_cliente, cuentaID, 'Principal', CURDATE());
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE ProcesarSolicitudCredito(IN p_id_solicitud INT)
+BEGIN
+    DECLARE idCliente INT;
+    DECLARE ingresos DECIMAL(12,2);
+    DECLARE deudas DECIMAL(12,2) DEFAULT 0;
+    DECLARE capacidad DECIMAL(5,2);
+
+    SELECT id_cliente, ingresos_declarados INTO idCliente, ingresos FROM solicitudes_de_credito WHERE id_solicitud = p_id_solicitud;
+
+    SELECT IFNULL(SUM(saldo_capital_actual), 0) INTO deudas
+    FROM creditos_otorgados co
+    JOIN solicitudes_de_credito sc ON sc.id_solicitud = co.id_solicitud
+    WHERE sc.id_cliente = idCliente;
+
+    SET capacidad = FN_CalcularCapacidadEndeudamiento(ingresos, deudas);
+
+    UPDATE cliente
+    SET nivel_de_riesgo_asignado = FN_DeterminarNivelRiesgoCliente(capacidad, FN_ObtenerHistorialCrediticio(idCliente))
+    WHERE id_cliente = idCliente;
+
+    IF capacidad > 40 THEN
+        UPDATE solicitudes_de_credito SET decision_final = 'Aprobado' WHERE id_solicitud = p_id_solicitud;
+    ELSE
+        UPDATE solicitudes_de_credito SET decision_final = 'Rechazado' WHERE id_solicitud = p_id_solicitud;
+    END IF;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE EmitirTarjetaCredito(
+    IN p_id_cliente INT,
+    IN p_tipo VARCHAR(40),
+    IN p_red VARCHAR(40),
+    IN p_linea_credito DECIMAL(12,2)
+)
+BEGIN
+    INSERT INTO tarjetas_de_credito (id_cliente, tipo, red, linea_de_credito_asignada, fecha_de_emision, fecha_de_vencimiento, limite_para_avances, tasa_de_interes_rotatoria, tasa_para_avances, ciclo_de_facturacion, estado)
+    VALUES (p_id_cliente, p_tipo, p_red, p_linea_credito, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 5 YEAR), p_linea_credito * 0.3, 35.00, 40.00, 'Mensual', 'activa');
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE RegistrarTransaccion(
+    IN p_id_origen INT,
+    IN p_id_destino INT,
+    IN p_monto DECIMAL(12,2),
+    IN p_concepto VARCHAR(100),
+    IN p_canal VARCHAR(40),
+    IN p_id_usuario INT
+)
+BEGIN
+    IF NOT FN_VerificarDisponibilidadFondos(p_id_origen, p_monto) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Fondos insuficientes.';
+    END IF;
+
+    INSERT INTO transacciones_financieras (fecha, hora, tipo, id_cuenta_origen, id_cuenta_destino, monto, concepto, canal_utilizado, id_usuario_autorizo, numero_de_comprobante, estado)
+    VALUES (CURDATE(), CURTIME(), 'Transferencia', p_id_origen, p_id_destino, p_monto, p_concepto, p_canal, p_id_usuario, CONCAT('TX-', UUID()), 'completada');
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE ActualizarClasificacionCliente(IN p_id_cliente INT)
+BEGIN
+    DECLARE ingresos DECIMAL(12,2);
+    DECLARE deudas DECIMAL(12,2);
+    DECLARE capacidad DECIMAL(5,2);
+
+    SELECT ingresos_mensuales_declarados INTO ingresos FROM cliente WHERE id_cliente = p_id_cliente;
+    SELECT IFNULL(SUM(saldo_capital_actual), 0) INTO deudas
+    FROM creditos_otorgados co
+    JOIN solicitudes_de_credito sc ON sc.id_solicitud = co.id_solicitud
+    WHERE sc.id_cliente = p_id_cliente;
+
+    SET capacidad = FN_CalcularCapacidadEndeudamiento(ingresos, deudas);
+
+    UPDATE cliente
+    SET nivel_de_riesgo_asignado = FN_DeterminarNivelRiesgoCliente(capacidad, FN_ObtenerHistorialCrediticio(p_id_cliente))
+    WHERE id_cliente = p_id_cliente;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER TR_ActualizarSaldoCuenta
+AFTER INSERT ON transacciones_financieras
+FOR EACH ROW
+BEGIN
+    IF NEW.id_cuenta_origen IS NOT NULL THEN
+        UPDATE cuentas_bancarias SET saldo_actual = saldo_actual - NEW.monto WHERE id_cuenta = NEW.id_cuenta_origen;
+    END IF;
+    IF NEW.id_cuenta_destino IS NOT NULL THEN
+        UPDATE cuentas_bancarias SET saldo_actual = saldo_actual + NEW.monto WHERE id_cuenta = NEW.id_cuenta_destino;
+    END IF;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER TR_VerificarLimitesOperacion
+BEFORE INSERT ON transacciones_financieras
+FOR EACH ROW
+BEGIN
+    IF NEW.monto > 100000 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Monto excede el límite permitido.';
+    END IF;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER TR_RegistrarHistorialCredito
+AFTER INSERT ON creditos_otorgados
+FOR EACH ROW
+BEGIN
+    INSERT INTO auditoria_transacciones (id_usuario, accion, tabla_afectada, id_registro_afectado, detalle)
+    VALUES (1, 'Crédito otorgado', 'creditos_otorgados', NEW.id_credito, 'Crédito nuevo registrado');
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER TR_GenerarAlertaOperacionSospechosa
+AFTER INSERT ON transacciones_financieras
+FOR EACH ROW
+BEGIN
+    IF NEW.monto > 50000 THEN
+        INSERT INTO auditoria_transacciones (id_usuario, accion, tabla_afectada, id_registro_afectado, detalle)
+        VALUES (NEW.id_usuario_autorizo, 'Alerta: Operación sospechosa', 'transacciones_financieras', NEW.id_transaccion, 'Monto superior a 50,000 detectado');
+    END IF;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE TRIGGER TR_ActualizarEstadoPrestamo
+AFTER UPDATE ON pagos_creditos
+FOR EACH ROW
+BEGIN
+    DECLARE saldoRestante DECIMAL(12,2);
+    SELECT SUM(monto_capital) INTO saldoRestante
+    FROM pagos_creditos WHERE id_credito = NEW.id_credito AND estado_pago <> 'pagado';
+    IF saldoRestante IS NULL THEN
+        UPDATE creditos_otorgados SET estado = 'finalizado' WHERE id_credito = NEW.id_credito;
+    END IF;
+END //
+
+
+SELECT c.id_cliente, c.nombre_completo, cb.id_cuenta, cb.tipo, cb.moneda, cb.saldo_actual, cb.estado
+FROM cliente c
+JOIN cliente_cuenta cc ON c.id_cliente = cc.id_cliente
+JOIN cuentas_bancarias cb ON cc.id_cuenta = cb.id_cuenta
+WHERE c.nombre_completo = 'Juan Pérez';  -- <-- Cambia el nombre según el cliente
+
+
+DELIMITER ;
+
+CREATE OR REPLACE VIEW V_CuentasActivasCliente AS
+SELECT c.nombre_completo, cb.id_cuenta, cb.tipo, cb.moneda, cb.saldo_actual
+FROM cliente c
+JOIN cliente_cuenta cc ON c.id_cliente = cc.id_cliente
+JOIN cuentas_bancarias cb ON cc.id_cuenta = cb.id_cuenta
+WHERE cb.estado = 'activa';
+
+CREATE OR REPLACE VIEW V_CreditosVigentes AS
+SELECT c.nombre_completo, co.id_credito, co.monto_aprobado, co.saldo_capital_actual, co.estado
+FROM cliente c
+JOIN solicitudes_de_credito sc ON c.id_cliente = sc.id_cliente
+JOIN creditos_otorgados co ON sc.id_solicitud = co.id_solicitud
+WHERE co.estado = 'vigente';
+
+CREATE OR REPLACE VIEW V_MovimientosPorCuenta AS
+SELECT cb.id_cuenta, tf.fecha, tf.monto, tf.tipo, tf.concepto
+FROM cuentas_bancarias cb
+JOIN transacciones_financieras tf ON cb.id_cuenta IN (tf.id_cuenta_origen, tf.id_cuenta_destino)
+ORDER BY tf.fecha DESC;
+
+CREATE OR REPLACE VIEW V_TarjetasCreditoEstado AS
+SELECT c.nombre_completo, t.id_tarjeta, t.tipo, t.red, t.linea_de_credito_asignada, t.estado
+FROM tarjetas_de_credito t
+JOIN cliente c ON t.id_cliente = c.id_cliente;
+
+CREATE OR REPLACE VIEW V_GarantiasConstituidas AS
+SELECT g.id_garantia, g.tipo, g.descripcion_detallada, g.valor_comercial, g.estado_legal
+FROM garantias g;
+
+SET GLOBAL event_scheduler = ON;
+
+CREATE EVENT EVT_CalcularInteresesMensuales
+ON SCHEDULE EVERY 1 MONTH
+DO
+UPDATE cuentas_bancarias SET saldo_actual = saldo_actual + (saldo_actual * tasa_de_interes_aplicable / 100);
+
+CREATE EVENT EVT_VerificarVencimientosPrestamos
+ON SCHEDULE EVERY 1 DAY
+DO
+UPDATE creditos_otorgados SET estado = 'vencido'
+WHERE proximo_vencimiento < CURDATE() AND estado = 'vigente';
+
+CREATE EVENT EVT_ActualizarClasificacionesRiesgo
+ON SCHEDULE EVERY 1 MONTH
+DO
+UPDATE cliente SET nivel_de_riesgo_asignado = 'Reevaluar';
+
+CREATE EVENT EVT_GenerarReportesRegulatarios
+ON SCHEDULE EVERY 3 MONTH
+DO
+INSERT INTO auditoria_transacciones (id_usuario, accion, tabla_afectada, detalle)
+VALUES (1, 'Generación de reporte regulatorio', 'sistema', 'Reporte trimestral generado');
+
+CREATE EVENT EVT_MonitorearLimitesTarjetas
+ON SCHEDULE EVERY 1 MONTH
+DO
+UPDATE tarjetas_de_credito SET estado = 'revisión'
+WHERE linea_de_credito_asignada > 30000;
+
+SELECT id_cliente, nombre_completo, patrimonio_estimado
+FROM cliente
+WHERE patrimonio_estimado > 1000000
+ORDER BY patrimonio_estimado DESC;
+
+SELECT co.id_credito, c.nombre_completo, pc.nombre_comercial AS tipo_credito, co.saldo_capital_actual, co.estado
+FROM creditos_otorgados co
+JOIN solicitudes_de_credito sc ON co.id_solicitud = sc.id_solicitud
+JOIN productos_de_credito pc ON sc.id_producto = pc.id_producto
+JOIN cliente c ON sc.id_cliente = c.id_cliente
+WHERE pc.tipo = 'Hipotecario'
+  AND co.saldo_capital_actual > 50000;
+SELECT id_transaccion, fecha, tipo, monto, concepto, estado
+FROM transacciones_financieras
+WHERE tipo IN ('Depósito', 'Transferencia')
+ORDER BY fecha DESC;
+
+SELECT id_solicitud, fecha, id_cliente, producto_solicitado, monto, decision_final
+FROM solicitudes_de_credito
+WHERE YEAR(fecha) = 2024
+  AND QUARTER(fecha) = 1;
+SELECT id_cuenta, tipo, moneda, saldo_actual, estado
+FROM cuentas_bancarias
+WHERE tipo IN ('Ahorro', 'Corriente', 'Inversión')
+ORDER BY tipo;
+
+SELECT id_cliente, nombre_completo, correo, telefono
+FROM cliente
+WHERE LOWER(nombre_completo) LIKE '%maría%'
+   OR LOWER(nombre_completo) LIKE '%josé%';
+
+SELECT id_garantia, tipo, descripcion_detallada, valor_comercial, fecha_de_constitucion, fecha_de_vencimiento
+FROM garantias
+WHERE fecha_de_vencimiento IS NULL
+   OR fecha_de_vencimiento = '';
+
+SELECT id_transaccion, tipo, monto, fecha, cuenta_origen, cuenta_destino, estado
+FROM transacciones_financieras
+ORDER BY tipo ASC, monto DESC;
+
+SELECT 
+    sb.nombre AS sucursal,
+    tf.tipo AS tipo_transaccion,
+    SUM(tf.monto) AS volumen_total,
+    COUNT(tf.id_transaccion) AS cantidad_transacciones
+FROM transacciones_financieras tf
+JOIN cuentas_bancarias cb ON tf.id_cuenta_origen = cb.id_cuenta OR tf.id_cuenta_destino = cb.id_cuenta
+JOIN sucursales_bancarias sb ON cb.id_sucursal = sb.id_sucursal
+WHERE YEAR(tf.fecha) = 2024
+  AND QUARTER(tf.fecha) = 1
+GROUP BY sb.nombre, tf.tipo
+ORDER BY sb.nombre, volumen_total DESC;
