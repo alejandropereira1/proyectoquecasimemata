@@ -218,8 +218,6 @@ CREATE TABLE auditoria_transacciones (
     detalle VARCHAR(255),
     FOREIGN KEY (id_usuario) REFERENCES usuarios_sistema(id_usuario)
 );
-USE ejercicio2;
-
 
 INSERT INTO sucursales_bancarias (nombre, direccion, coordenadas_geograficas, telefono, horario_de_atencion, gerente_responsable, numero_de_cajeros, numero_de_asesores_comerciales, cajas_de_seguridad_disponibles, servicios_ofrecidos)
 VALUES
@@ -564,9 +562,10 @@ BEGIN
     DECLARE saldoRestante DECIMAL(12,2);
     SELECT SUM(monto_capital) INTO saldoRestante
     FROM pagos_creditos WHERE id_credito = NEW.id_credito AND estado_pago <> 'pagado';
-    IF saldoRestante IS NULL THEN
-        UPDATE creditos_otorgados SET estado = 'finalizado' WHERE id_credito = NEW.id_credito;
+    IF saldoRestante IS NULL OR saldoRestante = 0 THEN
+    UPDATE creditos_otorgados SET estado = 'finalizado' WHERE id_credito = NEW.id_credito;
     END IF;
+
 END //
 
 
@@ -655,7 +654,7 @@ FROM transacciones_financieras
 WHERE tipo IN ('Depósito', 'Transferencia')
 ORDER BY fecha DESC;
 
-SELECT id_solicitud, fecha, id_cliente, producto_solicitado, monto, decision_final
+SELECT id_solicitud, fecha, id_cliente, id_producto, monto, decision_final
 FROM solicitudes_de_credito
 WHERE YEAR(fecha) = 2024
   AND QUARTER(fecha) = 1;
@@ -674,9 +673,10 @@ FROM garantias
 WHERE fecha_de_vencimiento IS NULL
    OR fecha_de_vencimiento = '';
 
-SELECT id_transaccion, tipo, monto, fecha, cuenta_origen, cuenta_destino, estado
+SELECT id_transaccion, tipo, monto, fecha, id_cuenta_origen, id_cuenta_destino, estado
 FROM transacciones_financieras
 ORDER BY tipo ASC, monto DESC;
+
 
 SELECT 
     sb.nombre AS sucursal,
